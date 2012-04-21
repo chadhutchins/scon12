@@ -24,18 +24,18 @@ THE SOFTWARE.
 
 // sugarcrm username and password that will be used to
 // connect to sugarcrm via the web services
-$username = "user";
-$password = "pass";
+$username = "admin";
+$password = "password";
 
 // url to sugarcrm web services 
-$web_services_url = "http://your-crm-system.com/service/v2/soap.php?wsdl";
+$web_services_url = "http://sugarce650.dev/service/v4_1/rest.php";
 
 // the url you would like the user to be redirected to
 // after completing the form
-$redirect_url = "http://your-website.com/thank-you-page";
+$redirect_url = "http://chadhutchins.dev/sugarcon/thankyou";
 
 // the name of the module you'll be adding the form data to
-$module_name = "custom_module_name";
+$module_name = "srvy_scon12";
 
 // the form fields you want to attempt to gather data from
 // within the form and pass to sugar. for example, if you 
@@ -46,30 +46,14 @@ $module_name = "custom_module_name";
 //     "email" => "emailaddress"
 // )
 $available_fields = array(
-    "field_1_name",
-    "field_2_name",
-    "field_3_name",
-    "field_4_name_c",
-    "field_5_name_c"
+    "name" => "name",
+    "question1" => "question1",
+    "question2" => "question2",
+    "question3" => "question3"
 );
 
-// Insert LifeLine record
-define('sugarEntry',true);
-require_once('nusoap.php');
-
-// instantiate SOAP client
-$client = new soapclient($web_services_url,true);
-
-$auth_array = array(
-    'user_auth' => array(
-        'user_name' => $username,
-        'password' => md5($password),
-    )
-);
-
-// Login to SugarCRM and retrieve session id
-$login_results = $client->call('login',$auth_array);
-$session_id = $login_results['id'];
+require_once('sugar_rest.php');
+$sugar = new Sugar_REST($web_services_url,$username,$password);
 
 // loop through each available field and get value from form data
 $name_value_list = array();
@@ -81,15 +65,8 @@ foreach($available_fields as $sugarfield => $formfield)
     );
 }
 
-// Setup array of data to send to SugarCRM
-$set_entry_params = array(
-    'session' => $session_id,
-    'module_name' => $module_name,
-    'name_value_list' => $name_value_list
-);
-
 // add form information to SugarCRM
-$result = $client->call('set_entry',$set_entry_params);
+$result = $sugar->set($module_name,$name_value_list);
 
 // Redirect
 header('Location: '.$redirect_url);
